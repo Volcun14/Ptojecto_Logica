@@ -1,0 +1,354 @@
+// ==========================================================
+// Archivo 1: Vehiculo.java
+// (Esta es la superclase abstracta)
+// ==========================================================
+public abstract class Vehiculo {
+
+    // 1. Atributos (Encapsulamiento)
+    protected String tipo;
+    protected int capacidad;
+    protected double valorPasaje;
+    protected double costoPeajes;
+    protected double consumoBaseKmPorGalon; // km/galón
+    
+    // Precio constante de la gasolina
+    protected static final double PRECIO_GALON = 16000.0;
+
+    // 2. Constructor (para inicializar subclases)
+    public Vehiculo(String tipo, int capacidad, double valorPasaje, double costoPeajes, double consumoBaseKmPorGalon) {
+        this.tipo = tipo;
+        this.capacidad = capacidad;
+        this.valorPasaje = valorPasaje;
+        this.costoPeajes = costoPeajes;
+        this.consumoBaseKmPorGalon = consumoBaseKmPorGalon;
+    }
+
+    // 3. Métodos comunes
+    
+    /**
+     * Calcula los ingresos brutos basados en los pasajeros.
+     * El valor es el mismo sin importar dónde se recojan.
+     */
+    public double calcularIngresos(int pasajeros) {
+        if (pasajeros > this.capacidad) {
+            // Validar que no se exceda el cupo
+            pasajeros = this.capacidad; 
+        }
+        return pasajeros * this.valorPasaje;
+    }
+
+    /**
+     * Calcula los gastos totales (Combustible + Peajes).
+     */
+    public double calcularGastosTotales(double costoCombustible) {
+        // Los peajes se listan en la tabla
+        return costoCombustible + this.costoPeajes;
+    }
+
+    /**
+     * Calcula la rentabilidad del viaje (Ingresos - Gastos).
+     */
+    public double calcularRentabilidad(int pasajeros, double costoCombustible) {
+        double ingresos = calcularIngresos(pasajeros);
+        double gastos = calcularGastosTotales(costoCombustible);
+        return ingresos - gastos;
+    }
+
+    // 4. Método Abstracto (Polimorfismo)
+    /**
+     * Calcula el costo del combustible.
+     * Este método DEBE ser implementado por cada subclase (Taxi, Vans, Buseta),
+     * ya que sus reglas de consumo adicional son diferentes.
+     * * @param kilometros Distancia del trayecto (solo ida)
+     * @param pasajeros Número de pasajeros
+     * @param esAutopista True si la ruta es Autopista, False (Palmas/Santa Elena)
+     * @param esSubida True si es (Med->Rio), False (Rio->Med)
+     * @param kmsEnCambios Array [km_1a, km_2a, km_3a] usado solo en subida
+     * @return El costo total en pesos del combustible para ese trayecto.
+     */
+    public abstract double calcularCostoCombustible(
+        double kilometros, 
+        int pasajeros, 
+        boolean esAutopista, 
+        boolean esSubida, 
+        double[] kmsEnCambios
+    );
+
+    // Getters
+    public String getTipo() { return tipo; }
+    public int getCapacidad() { return capacidad; }
+}
+
+
+// ==========================================================
+// Archivo 2: Taxi.java
+// (Primera subclase)
+// ==========================================================
+public class Taxi extends Vehiculo {
+
+    // El constructor llama al constructor de la superclase (Vehiculo)
+    // con los valores específicos del Taxi
+    public Taxi() {
+        super("Taxi", 4, 25000.0, 15500.0, 50.0);
+    }
+
+    /**
+     * Implementación Polimórfica: Calcula el combustible para un Taxi.
+     */
+    @Override
+    public double calcularCostoCombustible(double kilometros, int pasajeros, boolean esAutopista, boolean esSubida, double[] kmsEnCambios) {
+        
+        // 1. Consumo base (Carro vacío)
+        double galonesBase = kilometros / this.consumoBaseKmPorGalon;
+        
+        // 2. Consumo adicional por pasajero
+        double porcentajeAumentoPasajero;
+        if (esAutopista) {
+            porcentajeAumentoPasajero = 0.05; // 5% en autopista
+        } else {
+            porcentajeAumentoPasajero = 0.02; // 2% en otras rutas
+        }
+        // El aumento es (galones_base * %) * N_pasajeros
+        double aumentoPorPasajeros = galonesBase * (porcentajeAumentoPasajero * pasajeros);
+
+        // 3. Consumo adicional por subida (cambios)
+        double aumentoPorCambios = 0.0;
+        if (esSubida) {
+            // El consumo adicional es sobre los KMs recorridos en ese cambio
+            double galones_1a = (kmsEnCambios[0] / this.consumoBaseKmPorGalon) * 0.03; // 3%
+            double galones_2a = (kmsEnCambios[1] / this.consumoBaseKmPorGalon) * 0.02; // 2%
+            double galones_3a = (kmsEnCambios[2] / this.consumoBaseKmPorGalon) * 0.01; // 1%
+            aumentoPorCambios = galones_1a + galones_2a + galones_3a;
+        }
+
+        // 4. Cálculo final
+        double galonesTotales = galonesBase + aumentoPorPasajeros + aumentoPorCambios;
+        return galonesTotales * PRECIO_GALON;
+    }
+}
+
+
+// ==========================================================
+// Archivo 3: Vans.java
+// (Segunda subclase)
+// ==========================================================
+public class Vans extends Vehiculo {
+
+    // Constructor con valores de la Vans
+    public Vans() {
+        super("Vans", 10, 17000.0, 19500.0, 40.0);
+    }
+
+    /**
+     * Implementación Polimórfica: Calcula el combustible para una Vans.
+     */
+    @Override
+    public double calcularCostoCombustible(double kilometros, int pasajeros, boolean esAutopista, boolean esSubida, double[] kmsEnCambios) {
+        
+        double galonesBase = kilometros / this.consumoBaseKmPorGalon; //
+        
+        // Regla de negocio para Vans
+        double porcentajeAumentoPasajero;
+        if (esAutopista) {
+            porcentajeAumentoPasajero = 0.08; // 8% en autopista
+        } else {
+            porcentajeAumentoPasajero = 0.03; // 3% en otras rutas
+        }
+        double aumentoPorPasajeros = galonesBase * (porcentajeAumentoPasajero * pasajeros);
+
+        // Consumo adicional por subida (misma lógica)
+        double aumentoPorCambios = 0.0;
+        if (esSubida) {
+            double galones_1a = (kmsEnCambios[0] / this.consumoBaseKmPorGalon) * 0.03; // 3%
+            double galones_2a = (kmsEnCambios[1] / this.consumoBaseKmPorGalon) * 0.02; // 2%
+            double galones_3a = (kmsEnCambios[2] / this.consumoBaseKmPorGalon) * 0.01; // 1%
+            aumentoPorCambios = galones_1a + galones_2a + galones_3a;
+        }
+
+        double galonesTotales = galonesBase + aumentoPorPasajeros + aumentoPorCambios;
+        return galonesTotales * PRECIO_GALON;
+    }
+}
+
+
+// ==========================================================
+// Archivo 4: Buseta.java
+// (Tercera subclase)
+// ==========================================================
+public class Buseta extends Vehiculo {
+
+    // Constructor con valores de la Buseta
+    public Buseta() {
+        super("Buseta", 15, 12000.0, 22000.0, 30.0);
+    }
+
+    /**
+     * Implementación Polimórfica: Calcula el combustible para una Buseta.
+     */
+    @Override
+    public double calcularCostoCombustible(double kilometros, int pasajeros, boolean esAutopista, boolean esSubida, double[] kmsEnCambios) {
+        
+        double galonesBase = kilometros / this.consumoBaseKmPorGalon; //
+        
+        // Regla de negocio para Buseta
+        double porcentajeAumentoPasajero;
+        if (esAutopista) {
+            porcentajeAumentoPasajero = 0.12; // 12% en autopista
+        } else {
+            porcentajeAumentoPasajero = 0.03; // 3% en otras rutas
+        }
+        double aumentoPorPasajeros = galonesBase * (porcentajeAumentoPasajero * pasajeros);
+
+        // Consumo adicional por subida (misma lógica)
+        double aumentoPorCambios = 0.0;
+        if (esSubida) {
+            double galones_1a = (kmsEnCambios[0] / this.consumoBaseKmPorGalon) * 0.03; // 3%
+            double galones_2a = (kmsEnCambios[1] / this.consumoBaseKmPorGalon) * 0.02; // 2%
+            double galones_3a = (kmsEnCambios[2] / this.consumoBaseKmPorGalon) * 0.01; // 1%
+            aumentoPorCambios = galones_1a + galones_2a + galones_3a;
+        }
+
+        double galonesTotales = galonesBase + aumentoPorPasajeros + aumentoPorCambios;
+        return galonesTotales * PRECIO_GALON;
+    }
+}
+
+
+// ==========================================================
+// Archivo 5: SimuladorTransporte.java
+// (Clase principal para ejecutar el programa)
+// ==========================================================
+import java.util.Random;
+import java.text.NumberFormat;
+import java.util.Locale; // Importar Locale para formato de moneda
+
+public class SimuladorTransporte {
+
+    // Configuración de la simulación
+    [cite_start]// Se asume la misma ruta toda la semana [cite: 20]
+    private static final String RUTA_SEMANAL = "Autopista"; // Puede ser "Autopista", "SantaElena" o "Palmas"
+    private static final int DIAS_SIMULACION = 6; [cite_start]// Lunes a Sábado [cite: 25]
+
+    public static void main(String[] args) {
+        
+        // 1. Inicializar los vehículos (Polimorfismo)
+        Vehiculo[] flota = {
+            new Taxi(),
+            new Vans(),
+            new Buseta()
+        };
+
+        // 2. Definir parámetros de la ruta
+        double distanciaRuta; // Distancia de UN SOLO TRAYECTO
+        boolean esAutopista;
+
+        switch (RUTA_SEMANAL) {
+            case "SantaElena":
+                distanciaRuta = 50.0; [cite_start]// 100km ida y vuelta [cite: 9]
+                esAutopista = false;
+                break;
+            case "Palmas":
+                distanciaRuta = 55.0; [cite_start]// 110km ida y vuelta [cite: 10]
+                esAutopista = false;
+                break;
+            case "Autopista":
+            default:
+                distanciaRuta = 45.0; [cite_start]// 90km ida y vuelta [cite: 8]
+                esAutopista = true;
+                break;
+        }
+        
+        System.out.println("--- Iniciando Simulación Transportes Chachafruto ---");
+        System.out.println("Ruta Semanal: " + RUTA_SEMANAL + " (" + distanciaRuta + " km por trayecto)");
+
+        [cite_start]// 3. Crear Arreglo Matricial [cite: 25]
+        // [TipoVehiculo][Dia][Direccion]
+        // Direccion: 0=Bajada (Rio->Med), 1=Subida (Med->Rio)
+        double[][][] rentabilidadSemanal = new double[flota.length][DIAS_SIMULACION][2];
+        
+        Random random = new Random(); // Para simular pasajeros y uso de cambios
+
+        [cite_start]// 4. Ejecutar Simulación [cite: 25]
+        for (int dia = 0; dia < DIAS_SIMULACION; dia++) { // 6 días
+            for (int i = 0; i < flota.length; i++) { // Para Taxi, Vans, Buseta
+                
+                Vehiculo v = flota[i];
+                int pasajerosBajada;
+                int pasajerosSubida;
+
+                // Reglas de pasajeros
+                if (v.getTipo().equals("Taxi")) {
+                    pasajerosBajada = v.getCapacidad(); [cite_start]// Taxi siempre lleno [cite: 16]
+                    pasajerosSubida = v.getCapacidad(); [cite_start]// Taxi siempre lleno [cite: 16]
+                } else {
+                    [cite_start]// Vans y Buseta pueden tener cupos variables [cite: 16]
+                    pasajerosBajada = 1 + random.nextInt(v.getCapacidad()); // Al menos 1
+                    pasajerosSubida = 1 + random.nextInt(v.getCapacidad()); // Al menos 1
+                }
+
+                // --- Simulación BAJADA (Rionegro -> Medellín) ---
+                boolean esSubida = false;
+                double[] kmsCambiosBajada = {0.0, 0.0, 0.0}; // No hay recargo en bajada
+                double costoCombustibleBajada = v.calcularCostoCombustible(distanciaRuta, pasajerosBajada, esAutopista, esSubida, kmsCambiosBajada);
+                double rentabilidadBajada = v.calcularRentabilidad(pasajerosBajada, costoCombustibleBajada);
+                rentabilidadSemanal[i][dia][0] = rentabilidadBajada; [cite_start]// Guardar en matriz [cite: 25]
+
+                // --- Simulación SUBIDA (Medellín -> Rionegro) ---
+                esSubida = true;
+                [cite_start]// Simulación de KMs en cambios (No debe exceder la distancia total) [cite: 14]
+                double km_1a = random.nextDouble() * (distanciaRuta * 0.1); // Ej: Max 10% en 1a
+                double km_2a = random.nextDouble() * (distanciaRuta * 0.3); // Ej: Max 30% en 2a
+                double km_3a = random.nextDouble() * (distanciaRuta * 0.3); // Ej: Max 30% en 3a
+                double[] kmsCambiosSubida = {km_1a, km_2a, km_3a}; 
+                
+                double costoCombustibleSubida = v.calcularCostoCombustible(distanciaRuta, pasajerosSubida, esAutopista, esSubida, kmsCambiosSubida);
+                double rentabilidadSubida = v.calcularRentabilidad(pasajerosSubida, costoCombustibleSubida);
+                rentabilidadSemanal[i][dia][1] = rentabilidadSubida; [cite_start]// Guardar en matriz [cite: 25]
+            }
+        }
+
+        // 5. Imprimir resultados y calcular promedio
+        // Usar Locale Colombiano para el formato de moneda
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("es", "CO")); 
+        
+        double rentabilidadTotal = 0.0;
+        int totalViajes = 0;
+
+        System.out.println("\n--- Resultados de Rentabilidad Diaria (Ingresos - Gastos) ---");
+        
+        for (int i = 0; i < flota.length; i++) {
+            System.out.println("\nVehículo: " + flota[i].getTipo());
+            System.out.println("Día\t\tRent. Bajada\t\tRent. Subida");
+            System.out.println("---------------------------------------------------------");
+            
+            double rentabilidadTotalVehiculo = 0.0;
+            
+            for (int dia = 0; dia < DIAS_SIMULACION; dia++) {
+                double rentBajada = rentabilidadSemanal[i][dia][0];
+                double rentSubida = rentabilidadSemanal[i][dia][1];
+                rentabilidadTotalVehiculo += rentBajada + rentSubida;
+
+                System.out.printf("Día %d\t\t%s\t\t%s\n", 
+                    (dia + 1), 
+                    currencyFormatter.format(rentBajada), 
+                    currencyFormatter.format(rentSubida)
+                );
+            }
+            
+            rentabilidadTotal += rentabilidadTotalVehiculo;
+            totalViajes += DIAS_SIMULACION * 2; // 2 viajes (ida/vuelta) por día
+            
+            double promedioVehiculo = rentabilidadTotalVehiculo / (DIAS_SIMULACION * 2);
+            System.out.println("Promedio Vehículo: " + currencyFormatter.format(promedioVehiculo) + " por viaje");
+
+        }
+
+        [cite_start]// 6. Promedio final [cite: 25]
+        double promedioRentabilidad = rentabilidadTotal / totalViajes;
+        System.out.println("\n=========================================================");
+        System.out.println("Rentabilidad Total (6 días, 3 vehículos): " + currencyFormatter.format(rentabilidadTotal));
+        System.out.println("Viajes Totales Simulados: " + totalViajes);
+        System.out.println("RENTABILIDAD PROMEDIO GENERAL (POR VIAJE): " + currencyFormatter.format(promedioRentabilidad));
+        System.out.println("=========================================================");
+    }
+}
