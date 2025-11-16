@@ -1,0 +1,48 @@
+public abstract class vehiculosBase {
+    
+    protected int capacidad;
+    protected String tipo;
+    protected double valorPasaje, costoPeajes, consumoBaseKmGalon; //KM/Galon
+    
+    //valor fijo de la gasolina
+    protected static final double PRECIO_GALON_GASOLINA =16000.0;
+    
+    public vehiculosBase(String tipo, int capacidad, double valorPasaje, double costoPeajes, double consumoBaseKmGalon){
+        
+        this.tipo=tipo;
+        this.capacidad=capacidad;
+        this.valorPasaje=valorPasaje;
+        this.costoPeajes=costoPeajes;
+        this.consumoBaseKmGalon=consumoBaseKmGalon;
+        
+    }
+    
+    public double calcularIngresos(int pasajeros){
+        
+        if (pasajeros > this.capacidad) {
+            pasajeros=this.capacidad;
+        }
+        return pasajeros * this.valorPasaje;
+    }
+    
+    public double calcularGastosTotales(double costoCombustible){
+        return costoCombustible + this.costoPeajes;
+    }
+    
+    public double calcularRentabilidad(int pasajeros, double costoCombustible){
+        
+        double ingresos =  calcularIngresos(pasajeros);
+        double gastos = calcularGastosTotales(costoCombustible);
+        return ingresos - gastos;
+        
+    }
+    
+    public abstract double calcularCostoCombustible(double kilometros, int pasajeros, boolean autopista, boolean subida, double[] kmCambios);
+    
+    public String getTipo(){
+        return tipo;
+    }
+    public int getCapacidad(){
+        return capacidad;
+    }
+}
