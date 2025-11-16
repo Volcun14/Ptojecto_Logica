@@ -1,0 +1,99 @@
+class taxi extends vehiculosBase{
+
+    public taxi() {
+        super("Taxi", 4, 25000.0, 15500.0, 50.0);
+    }
+    
+    @Override
+    public double calcularCostoCombustible(double Kilometros, int pasajeros, boolean Autopista, boolean subida, double[] kmCambios){
+       
+        double porcentajeAumentoPasajero, galonesBase, aumentoPorPasajero, aumentoPorCambio=0.0, galones_1a, galones_2a, galones_3a, galonesPorCambio, galonesTotales;
+       galonesBase = Kilometros / this.consumoBaseKmGalon;
+       
+        if (Autopista) {
+            porcentajeAumentoPasajero = 0.05;
+        }else{
+            porcentajeAumentoPasajero = 0.02;
+        }
+        aumentoPorPasajero = galonesBase * porcentajeAumentoPasajero;
+        
+        if (subida) {
+            
+            galones_1a = (kmCambios[0]/this.consumoBaseKmGalon)*0.03;
+            galones_2a = (kmCambios[1]/this.consumoBaseKmGalon)*0.02;
+            galones_3a = (kmCambios[2]/this.consumoBaseKmGalon)*0.01;
+            aumentoPorCambio = galones_1a + galones_2a + galones_3a;
+        }
+        galonesTotales = galonesBase + aumentoPorPasajero + aumentoPorCambio;
+        
+        return galonesTotales * PRECIO_GALON;
+    }
+    
+    
+}
+
+class vans extends vehiculosBase{
+    
+    public vans() {
+        super("Vans", 10, 17000.0, 19500.0, 40.0);
+    }
+
+    @Override
+    public double calcularCostoCombustible(double Kilometros, int pasajeros, boolean Autopista, boolean subida, double[] kmCambios){
+       
+        double porcentajeAumentoPasajero, galonesBase, aumentoPorPasajero, aumentoPorCambio=0.0, galones_1a, galones_2a, galones_3a, galonesPorCambio, galonesTotales;
+       galonesBase = Kilometros / this.consumoBaseKmGalon;
+       
+        if (Autopista) {
+            porcentajeAumentoPasajero = 0.08;
+        }else{
+            porcentajeAumentoPasajero = 0.03;
+        }
+        aumentoPorPasajero = galonesBase * porcentajeAumentoPasajero;
+        
+        if (subida) {
+            
+            galones_1a = (kmCambios[0]/this.consumoBaseKmGalon)*0.03;
+            galones_2a = (kmCambios[1]/this.consumoBaseKmGalon)*0.02;
+            galones_3a = (kmCambios[2]/this.consumoBaseKmGalon)*0.01;
+            aumentoPorCambio = galones_1a + galones_2a + galones_3a;
+        }
+        galonesTotales = galonesBase + aumentoPorPasajero + aumentoPorCambio;
+        
+        return galonesTotales * PRECIO_GALON;
+    }
+    
+}
+
+class buseta extends vehiculosBase{
+    
+    buseta(){     
+        super("Buseta", 15, 12000.0, 22000.0, 30.0);   
+    }
+    
+    @Override
+    public double calcularCostoCombustible(double Kilometros, int pasajeros, boolean Autopista, boolean subida, double[] kmCambios){
+       
+        double porcentajeAumentoPasajero, galonesBase, aumentoPorPasajero, aumentoPorCambio=0.0, galones_1a, galones_2a, galones_3a, galonesPorCambio, galonesTotales;
+       galonesBase = Kilometros / this.consumoBaseKmGalon;
+       
+        if (Autopista) {
+            porcentajeAumentoPasajero = 0.12;
+        }else{
+            porcentajeAumentoPasajero = 0.03;
+        }
+        aumentoPorPasajero = galonesBase * porcentajeAumentoPasajero;
+        
+        if (subida) {
+            
+            galones_1a = (kmCambios[0]/this.consumoBaseKmGalon)*0.03;
+            galones_2a = (kmCambios[1]/this.consumoBaseKmGalon)*0.02;
+            galones_3a = (kmCambios[2]/this.consumoBaseKmGalon)*0.01;
+            aumentoPorCambio = galones_1a + galones_2a + galones_3a;
+        }
+        galonesTotales = galonesBase + aumentoPorPasajero + aumentoPorCambio;
+        
+        return galonesTotales * PRECIO_GALON;
+    }
+    
+}
